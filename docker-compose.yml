@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  web:
+    image: test/node # gives the image the name 'test/node'
+    build: .
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8999:8999"
+      - "5858:5858"
+
+
+# docker-compose up --build  # rebuild image
+
+# docker-compose up

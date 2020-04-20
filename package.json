@@ -1,0 +1,24 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "binary-split": "^1.0.5",
+    "deep-parse-json": "^1.0.1",
+    "express": "^4.17.1",
+    "lodash": "^4.17.15",
+    "mississippi": "^4.0.0",
+    "moment": "^2.24.0",
+    "nodemon": "^1.19.4",
+    "stream-adventure": "^4.1.1"
+  }
+}

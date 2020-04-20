@@ -1,0 +1,12 @@
+node_modules/
+coverage/
+test-build/
+build/
+lib/
+*.log
+config/uli.json
+.idea/
+*.iml
+*.tgz
+.DS_Store
+.nyc_output/
