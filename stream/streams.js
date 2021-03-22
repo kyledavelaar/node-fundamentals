@@ -36,24 +36,50 @@ function copyFile() {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-function upperCaseStreamTransformer() {
+
+function pipeSingleReadableToMultipleWritableStreams() {
+    const r = fs.createReadStream('original.txt');
+    const z = zlib.createGzip(); // a write stream (not a transform)
+    const w = fs.createWriteStream('file.txt.gz');
+    r.pipe(z).pipe(w);
+}
+
+// pipeSingleReadableToMultipleWritableStreams();
+
+
+///////////////////////////////////////////////////////////////////////////////
+function toUpperCase(chunk) {
+    return chunk.toString().toUpperCase();
+}
+
+function onFlush() {
+    return '\nTHIS APPENDED TO END OF FILE IF DESIRED, OTHERWISE REMOVE THIS CB';
+}
+
+function genericTransformer(fn) {
     const readStream = fs.createReadStream('./original.txt')
     const writeStream = fs.createWriteStream('./copy.txt')
-    const uppercase = miss.through(
+    const uppercaseTransform = miss.through(
         (chunk, enc, cb) => {
-            cb(null, chunk.toString().toUpperCase());
+            let error;
+            let result;
+            try {
+                result = fn(chunk);
+            } catch (e) {
+                error = e;
+            }
+            cb(error, result);
         },
         (cb) => {
-            cb(null, 'THIS APPENDED TO END OF FILE IF DESIRED, OTHERWISE REMOVE THIS CB')
+            cb(null, onFlush())
         }
     );
-    miss.pipe(readStream, uppercase, writeStream, err => {
-        if (err) console.log('error', err);
+    miss.pipe(readStream, uppercaseTransform, writeStream, err => {
         console.log('file uppercased');
     });
 }
 
-// upperCaseStreamTransformer();
+// genericTransformer(toUpperCase, onFlush);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,14 +95,41 @@ const makeReadableStreamFromString = string => {
 }
 // makeReadableStreamFromString('my dog ate my homework yo').pipe(process.stdout);
 
+///////////////////////////////////////////////////////////////////////////////
+const makeReadableStreamFromArray = arr => {
+    return miss.from((size, next) => {
+        // size defaults to 16384 on my machine
+        size = 100; // if set too low on large arrays, buffer will run out of memory
+        console.log('++++++++++++++++++CHUNK BASED ON THIS SIZE++++++++++++++++++++++: ', size);
+        if (arr.length === 0) {
+            return next(null, null)
+        }
+        const chunk = arr.slice(0, size);
+        arr = arr.slice(size);
+        next(null, chunk.toString());
+    })
+}
+const largeArr = new Array(100000).fill('_').map((n, i) => i);
+// makeReadableStreamFromArray(largeArr).pipe(process.stdout);
+
 
 ///////////////////////////////////////////////////////////////////////////////
+
+// export default function asyncConsumer(asyncFn, { objectMode = true, ...opts } = {}) {
+//     return miss.to({ objectMode, ...opts }, (records, encoding, cb) => {
+//         castPromise(() => asyncFn(records)).then(() => cb(), cb);
+//     });
+// }
+
 const makeWritableStreamFromString = wordsToWrite => {
     const write = (data, enc, cb) => {
-        console.log(data.toString());
-        cb();
+        data = data.toString().toUpperCase();  // can optionally transform data if desired
+        console.log(data);
+        cb()
     }
     const flush = cb => {
+        // called before finish/end and allows for cleanup
+        console.log('taking a second to clean up listeners, etc.')
         setTimeout(cb, 1000);
     }
     let ws = miss.to(write, flush);
@@ -85,7 +138,7 @@ const makeWritableStreamFromString = wordsToWrite => {
     ws.write(wordsToWrite[1]);
     ws.end();
 }
-// makeWritableStreamFromString(['my very first stream sentence', 'and another one on a new line']);
+// makeWritableStreamFromString(['my very first stream sentence', 'and another one on a new line'])
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -213,14 +266,14 @@ function drainNeededWhenWriteOneMillionTimes() {
     function write() {
         let bufferNotFull = true;
         do {
-        i--;
-        if (i === 0) { // Last time!
-            writer.write(`${i}\n`, encoding, callback);
-        } else {
-            // See if we should continue, or wait.
-            // Don't pass the callback, because we're not done yet.
-            bufferNotFull = writer.write(`${i}\n`, encoding);
-        }
+            i--;
+            if (i === 0) { // Last time!
+                writer.write(`${i}\n`, encoding, callback);
+            } else {
+                // See if we should continue, or wait.
+                // Don't pass the callback, because we're not done yet.
+                bufferNotFull = writer.write(`${i}\n`, encoding);
+            }
         } while (i > 0 && bufferNotFull);
         if (i > 0) {
             console.log('draining b/c buffer full');
@@ -306,7 +359,7 @@ const extendWritableClass = () => {
     process.stdin.pipe(customWritable);
 }
 
-extendWritableClass(); // (echo custom writable; echo via command line ) | node streams.js
+// extendWritableClass(); // (echo custom writable; echo via command line ) | node streams.js
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,2 @@
+this is some text i want to uppercase later
+will it do multi-line?

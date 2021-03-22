@@ -1,4 +1,25 @@
 ////////////////////////////////////
+// WAYS TO RESOLVE A PROMISE
+////////////////////////////////////
+const prom = new Promise(resolve => resolve('resolved'));
+
+// const callProm = async () => {
+//   const res = await prom;
+//   console.log(`callProm got it ${res}`);
+// };
+// callProm();
+// // // or
+// console.log( Promise.resolve(prom) );
+// // // or
+// prom.then(res => { console.log(`.then got it ${res}`) });
+// // // or
+// (async () => {
+//   const res = await prom;
+//   console.log(`iffy says`, res);
+// })()
+
+
+////////////////////////////////////
 // WAIT
 ////////////////////////////////////
 function wait(ms) {
@@ -21,9 +42,27 @@ function log2() {
 
 
 ///////////////////////////////////////////////////////
-// Promise.all without using Promise.all
+// Pass parameter(s) to resolve
 ///////////////////////////////////////////////////////
 
+function createMultiplicationPromise(x, y, delay) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(x * y);
+    }, delay)
+  })
+}
+
+const delayedMultiply = createMultiplicationPromise(4, 5, 1000);
+
+Promise.resolve(delayedMultiply).then(res => {
+  console.log('delayedMultiply', res);
+})
+
+
+///////////////////////////////////////////////////////
+// Promise.all without using Promise.all
+///////////////////////////////////////////////////////
 function createPromise(name, delay) {
   return new Promise((resolve, reject) => {
     setTimeout(() => {

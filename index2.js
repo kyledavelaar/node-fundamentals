@@ -1,6 +1,11 @@
+const _ = require('lodash');
+const moment = require('moment');
 
-const arr = [1,2,3]
-const x = arr.splice(1,1);
+const x = moment().format('DDDD');
 
 console.log(x);
-console.log(arr);
+
+
+
+
+

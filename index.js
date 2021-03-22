@@ -1,21 +1,17 @@
-import _ from 'lodash';
 
-class ClassWithPrivateVariables {
-    a = 1;
-    #b = 2;         // .#b is private
-    static #c = 3;  // .#c is private and static
+Date.prototype.getJulian = function() {
+    return Math.floor((this / 86400000) - (this.getTimezoneOffset() / 1440) + 2440587.5);
+  }
 
-    incB() {
-      this.#b++;
-    }
+var today = new Date(); //set any date
+var julian = today.getJulian(); //get Julian counterpart
+
+console.log(julian)
+
+
+function calculateJulianDate() {
+  const now = new Date();
+  return Math.floor(now / 86400000 - now.getTimezoneOffset() / 1440 + 2440587.5);
 }
 
-let m = new ClassWithPrivateVariables();
-
-m.incB(); // runs OK
-m.a = 3;
-console.log(_.get(m, 'a', null));
-// m.#b = 0; // error - private property cannot be modified outside class
-
-
-console.log('hi ya doing my ma yes no I am changing')
+// console.log(calculateJulianDate()) //2459271
